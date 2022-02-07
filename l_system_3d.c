@@ -6,11 +6,13 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "l_system_mesh.h"
+#include "turtle_3d.h"
 #include "utilities.h"
 #include "l_system_3d.h"
 
 #define DEFAULT_WINDOW_WIDTH (800)
 #define DEFAULT_WINDOW_HEIGHT (600)
+#define PI (3.1415926536)
 
 ApplicationState* AllocateApplicationState(void) {
   ApplicationState *to_return = NULL;
@@ -26,6 +28,7 @@ ApplicationState* AllocateApplicationState(void) {
 void FreeApplicationState(ApplicationState *s) {
   if (!s) return;
   if (s->mesh) DestroyLSystemMesh(s->mesh);
+  if (s->turtle) DestroyTurtle3D(s->turtle);
   glDeleteBuffers(1, &(s->ubo));
   if (s->window) glfwDestroyWindow(s->window);
   memset(s, 0, sizeof(*s));
@@ -81,21 +84,35 @@ static int SetupUniformBuffer(ApplicationState *s) {
   return CheckGLErrors();
 }
 
+static int Rotate90(Turtle3D *t) {
+  return RotateTurtle(t, PI * 0.5);
+}
+
 // This generates the vertices for the L-system, and updates the mesh. Returns
 // 0 on error.
 static int GenerateVertices(ApplicationState *s) {
-  // TODO: Actually store the vertices in s.
-  MeshVertex tmp_verts[] = {
-    {{0, 0, 0}, 0, {1, 1, 1}, 0, {0, 0, 0}, 0, {1, 0, 0, 1}},
-    {{1, 1, 1}, 0, {0, 0, 0}, 0, {0, 0, 0}, 0, {1, 0, 0, 1}},
-    // Green line from 0, 0, 0 -> 0, 1, 1
-    {{0, 0, 0}, 0, {0, 1, 1}, 0, {0, 0, 0}, 0, {0, 1, 0, 1}},
-    {{0, 1, 1}, 0, {0, 0, 0}, 0, {0, 0, 0}, 0, {0, 1, 0, 1}},
-    // Blue line from 0, 0, 0, -> 1, 1, 0
-    {{0, 0, 0}, 0, {1, 1, 0}, 0, {0, 0, 0}, 0, {0, 0, 1, 1}},
-    {{1, 1, 0}, 0, {0, 0, 0}, 0, {0, 0, 0}, 0, {0, 0, 1, 1}},
-  };
-  if (!SetMeshVertices(s->mesh, tmp_verts, 6)) {
+  Turtle3D *t = s->turtle;
+  t->color[0] = 1;
+  t->color[1] = 0;
+  t->color[2] = 0;
+  if (!MoveTurtleForward(t, 1.0)) return 0;
+  if (!Rotate90(t)) return 0;
+  t->color[0] = 0;
+  t->color[1] = 1;
+  if (!MoveTurtleForward(t, 1.0)) return 0;
+  if (!Rotate90(t)) return 0;
+  t->color[1] = 0;
+  t->color[2] = 1;
+  if (!MoveTurtleForward(t, 1.0)) return 0;
+  if (!Rotate90(t)) return 0;
+  t->color[0] = 1;
+  t->color[1] = 1;
+  if (!MoveTurtleForward(t, 1.0)) return 0;
+  if (!PitchTurtle(t, PI * 0.5)) return 0;
+  t->color[0] = 0.7;
+  t->color[1] = 0.1;
+  if (!MoveTurtleForward(t, 0.5)) return 0;
+  if (!SetMeshVertices(s->mesh, t->vertices, t->vertex_count)) {
     printf("Failed setting vertices.\n");
     return 0;
   }
@@ -120,6 +137,7 @@ static void UpdateCamera(ApplicationState *s) {
   up[1] = 1.0;
   tmp = glfwGetTime() / 4.0;
   position[0] = sin(tmp) * 4.0;
+  position[1] = 3.0;
   position[2] = cos(tmp) * 4.0;
   glm_lookat(position, target, up, s->shared_uniforms.view);
   glm_vec4(position, 0, s->shared_uniforms.camera_position);
@@ -195,6 +213,12 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
 
+  s->turtle = CreateTurtle3D();
+  if (!s->turtle) {
+    printf("Failed creating the \"turtle\" for drawing.\n");
+    to_return = 1;
+    goto cleanup;
+  }
   if (!GenerateVertices(s)) {
     printf("Failed generating vertices.\n");
     to_return = 1;

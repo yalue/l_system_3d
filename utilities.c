@@ -143,7 +143,7 @@ char* StringReplace(const char *input, const char *match, const char *r) {
     input_pos = strstr(input_pos, match);
   }
 
-  // Finally, copy any remaining input past the final output.
+  // Finally, copy any remaining input past the final match.
   unchanged_length = original_length - (((uintptr_t) prev_input_pos) -
     ((uintptr_t) input));
   memcpy(output_pos, prev_input_pos, unchanged_length);

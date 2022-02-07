@@ -7,6 +7,23 @@
 #include "utilities.h"
 #include "l_system_mesh.h"
 
+static void DebugPrintVec3(float *v) {
+  printf("(%.03f %.03f %.03f)", v[0], v[1], v[2]);
+}
+
+void DebugPrintVertex(MeshVertex *v) {
+  printf("Mesh vertex: ");
+  printf("position ");
+  DebugPrintVec3(v->location);
+  printf(", forward ");
+  DebugPrintVec3(v->forward);
+  printf(", up ");
+  DebugPrintVec3(v->up);
+  printf(", color ");
+  DebugPrintVec3(v->color);
+  printf(".\n");
+}
+
 // Loads and compiles a shader from the given file path. Returns 0 on error.
 static GLuint LoadShader(const char *path, GLenum shader_type) {
   GLuint to_return = 0;
@@ -152,10 +169,10 @@ LSystemMesh* CreateLSystemMesh(void) {
     (void *) offsetof(MeshVertex, location));
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
-    (void *) offsetof(MeshVertex, direction));
+    (void *) offsetof(MeshVertex, forward));
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
-    (void *) offsetof(MeshVertex, orientation));
+    (void *) offsetof(MeshVertex, up));
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
     (void *) offsetof(MeshVertex, color));

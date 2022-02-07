@@ -1,6 +1,8 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 #include <glad/glad.h>
+#include "l_system_mesh.h"
+#include "turtle_3d.h"
 
 // Uniforms shared with all shaders. Must match the layout in
 // shared_uniforms.glsl, and every field must be padded to four floats.
@@ -17,6 +19,7 @@ typedef struct {
   int window_height;
   float aspect_ratio;
   LSystemMesh *mesh;
+  Turtle3D *turtle;
   GLuint ubo;
   SharedUniforms shared_uniforms;
 } ApplicationState;

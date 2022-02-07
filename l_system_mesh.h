@@ -10,18 +10,18 @@
 
 // Defines a single vertex within the mesh.
 typedef struct {
-  float location[3];
+  vec3 location;
   float pad1;
   // Points in the direction of the next vertex. May be 0 if this is at the
   // end of a sequence of lines.
-  float direction[3];
+  vec3 forward;
   float pad2;
-  // Points "downward"; must be orthogonal to the direction. Basically just
-  // gives a consistent way to orient geometry.
-  float orientation[3];
+  // Points "upward"; must be orthogonal to the direction and normalized.
+  // Basically just gives a consistent way to orient geometry.
+  vec3 up;
   float pad3;
   // The color of the vertex.
-  float color[4];
+  vec4 color;
 } MeshVertex;
 
 // Holds information about a full mesh to render.
@@ -40,6 +40,9 @@ typedef struct {
   GLint model_uniform_index;
   GLint normal_uniform_index;
 } LSystemMesh;
+
+// Prints the vertex's info to stdout.
+void DebugPrintVertex(MeshVertex *v);
 
 // Allocates and initializes a new L-system mesh. Returns NULL on error. The
 // mesh is initially empty. Destroy the returned mesh using DestroyLSystemMesh
