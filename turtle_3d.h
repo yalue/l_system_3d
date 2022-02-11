@@ -33,26 +33,45 @@ typedef struct {
   uint32_t vertex_capacity;
 } Turtle3D;
 
+// TODO: add push and pop instructions that keep the turtle's position,
+// previous position, orientation, and color on a stack.
+
 // Allocates a new turtle, at position 0, 0, 0, with no vertices. Returns NULL
 // on error. The turtle starts out facing right, with up in the positive Y
 // direction.
 Turtle3D* CreateTurtle3D(void);
 
+// Resets the turtle to its original position (0, 0, 0) and orientation, facing
+// right. Clears the list of all generated vertices.
+void ResetTurtle3D(Turtle3D *t);
+
 // Destroys the given turtle, freeing any resources and vertices. The given
 // pointer is no longer valid after this returns.
 void DestroyTurtle3D(Turtle3D *t);
 
-// Moves the turtle forward by the given distance. Returns 0 on error.
+// The type used by all turtle-movement instructions. Some instructions may not
+// use the floating-point parameter. All instructions must return 0 on error
+// or nonzero on success.
+typedef int (*TurtleInstruction)(Turtle3D *t, float param);
+
+// Instrcts the turtle to move forward by the given distance, drawing a
+// segment.
 int MoveTurtleForward(Turtle3D *t, float distance);
 
-// Rotates the turtle about the upward axis by the given angle. Returns 0 on
-// error. Does not change the turtle's position; only its orientation.
+// Moves the turtle forward by the given distance, but does not draw a segment.
+int MoveTurtleForwardNoDraw(Turtle3D *t, float distance);
+
+// Instructs the turtle to rotate about its upward axis by the given angle.
+// Does not change the turtle's position. The angle is in degrees.
 int RotateTurtle(Turtle3D *t, float angle);
 
-// Rotates the turtle about its right-facing axis by the given angle. Returns
-// 0 on error. Does not change the turtle's position; only its orientation.
+// Instructs the turtle to rotate about its right-facing axis by the given
+// angle. Does not change the turtle's position. The angle is in degrees.
 int PitchTurtle(Turtle3D *t, float angle);
 
-// TODO: Implement functions for rotating the turtle. Use rotation matrices?
+// Instructs the turtle to rotate about its forward-facing axis by the given
+// angle. Does not change the turtle's position. The angle is in degrees.
+int RollTurtle(Turtle3D *t, float angle);
 
 #endif  // TURTLE_3D_H
+

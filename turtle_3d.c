@@ -12,6 +12,8 @@
 // be considered identical.
 #define MIN_POSITION_DIST (1.0e-6)
 
+#define PI (3.1415926536)
+
 Turtle3D* CreateTurtle3D(void) {
   Turtle3D *to_return = NULL;
   to_return = (Turtle3D *) calloc(1, sizeof(*to_return));
@@ -19,10 +21,6 @@ Turtle3D* CreateTurtle3D(void) {
     printf("Failed allocating Turtle3D struct.\n");
     return NULL;
   }
-  // Start out as opaque white
-  glm_vec4_one(to_return->color);
-  to_return->forward[0] = 1.0;
-  to_return->up[1] = 1.0;
   to_return->vertices = (MeshVertex *) calloc(INITIAL_TURTLE_CAPACITY,
     sizeof(MeshVertex));
   if (!to_return->vertices) {
@@ -31,7 +29,28 @@ Turtle3D* CreateTurtle3D(void) {
     return NULL;
   }
   to_return->vertex_capacity = INITIAL_TURTLE_CAPACITY;
+  ResetTurtle3D(to_return);
   return to_return;
+}
+
+void ResetTurtle3D(Turtle3D *t) {
+  // Opaque white color
+  glm_vec4_one(t->color);
+  // Start at the origin
+  glm_vec3_zero(t->position);
+  glm_vec3_zero(t->prev_position);
+  // Face in positive X direction, with up towards positive Y.
+  glm_vec3_zero(t->forward);
+  t->forward[0] = 1;
+  glm_vec3_zero(t->up);
+  t->up[1] = 1;
+  // The bounding cube is empty and ill-defined to begin with.
+  glm_vec3_zero(t->min_bounds);
+  glm_vec3_zero(t->max_bounds);
+  // We don't reallocate the array or zero it out here so we can reuse the
+  // turtle to draw another iteration without needing to clear all the
+  // vertices.
+  t->vertex_count = 0;
 }
 
 void DestroyTurtle3D(Turtle3D *t) {
@@ -121,24 +140,38 @@ static void UpdateBounds(Turtle3D *t) {
   }
 }
 
-int MoveTurtleForward(Turtle3D *t, float distance) {
+int MoveTurtleForwardNoDraw(Turtle3D *t, float distance) {
   vec3 change;
   glm_vec3_copy(t->position, t->prev_position);
   glm_vec3_scale(t->forward, distance, change);
   glm_vec3_add(t->position, change, t->position);
   UpdateBounds(t);
+  return 1;
+}
+
+int MoveTurtleForward(Turtle3D *t, float distance) {
+  if (!MoveTurtleForwardNoDraw(t, distance)) return 0;
   return AppendSegment(t);
 }
 
+static float ToRadians(float degrees) {
+  return degrees * (PI / 180.0);
+}
+
 int RotateTurtle(Turtle3D *t, float angle) {
-  glm_vec3_rotate(t->forward, angle, t->up);
+  glm_vec3_rotate(t->forward, ToRadians(angle), t->up);
   return 1;
 }
 
 int PitchTurtle(Turtle3D *t, float angle) {
   vec3 right;
   glm_vec3_cross(t->forward, t->up, right);
-  glm_vec3_rotate(t->up, angle, right);
-  glm_vec3_rotate(t->forward, angle, right);
+  glm_vec3_rotate(t->up, ToRadians(angle), right);
+  glm_vec3_rotate(t->forward, ToRadians(angle), right);
+  return 1;
+}
+
+int RollTurtle(Turtle3D *t, float angle) {
+  glm_vec3_rotate(t->up, ToRadians(angle), t->forward);
   return 1;
 }

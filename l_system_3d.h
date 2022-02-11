@@ -2,6 +2,7 @@
 #include <cglm/cglm.h>
 #include <glad/glad.h>
 #include "l_system_mesh.h"
+#include "parse_config.h"
 #include "turtle_3d.h"
 
 // Uniforms shared with all shaders. Must match the layout in
@@ -19,6 +20,7 @@ typedef struct {
   int window_height;
   float aspect_ratio;
   LSystemMesh *mesh;
+  LSystemConfig *config;
   Turtle3D *turtle;
   GLuint ubo;
   SharedUniforms shared_uniforms;

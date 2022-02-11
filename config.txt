@@ -1,0 +1,20 @@
+# Draw a dragon curve.
+init F
+F F+G
+G F-G
+
+actions
+
+F
+move_forward 1.0
+
+G
+move_forward 1.0
+
+-
+rotate -90.0
+
++
+# Comments can go anywhere, so long as the '#' is at the start of the line.
+rotate 90.0
+

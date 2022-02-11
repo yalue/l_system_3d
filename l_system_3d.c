@@ -6,13 +6,13 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "l_system_mesh.h"
+#include "parse_config.h"
 #include "turtle_3d.h"
 #include "utilities.h"
 #include "l_system_3d.h"
 
 #define DEFAULT_WINDOW_WIDTH (800)
 #define DEFAULT_WINDOW_HEIGHT (600)
-#define PI (3.1415926536)
 
 ApplicationState* AllocateApplicationState(void) {
   ApplicationState *to_return = NULL;
@@ -29,6 +29,7 @@ void FreeApplicationState(ApplicationState *s) {
   if (!s) return;
   if (s->mesh) DestroyLSystemMesh(s->mesh);
   if (s->turtle) DestroyTurtle3D(s->turtle);
+  if (s->config) DestroyLSystemConfig(s->config);
   glDeleteBuffers(1, &(s->ubo));
   if (s->window) glfwDestroyWindow(s->window);
   memset(s, 0, sizeof(*s));
@@ -85,7 +86,7 @@ static int SetupUniformBuffer(ApplicationState *s) {
 }
 
 static int Rotate90(Turtle3D *t) {
-  return RotateTurtle(t, PI * 0.5);
+  return RotateTurtle(t, 90);
 }
 
 // This generates the vertices for the L-system, and updates the mesh. Returns
@@ -108,7 +109,7 @@ static int GenerateVertices(ApplicationState *s) {
   t->color[0] = 1;
   t->color[1] = 1;
   if (!MoveTurtleForward(t, 1.0)) return 0;
-  if (!PitchTurtle(t, PI * 0.5)) return 0;
+  if (!PitchTurtle(t, 90)) return 0;
   t->color[0] = 0.7;
   t->color[1] = 0.1;
   if (!MoveTurtleForward(t, 0.5)) return 0;
@@ -219,6 +220,19 @@ int main(int argc, char **argv) {
     to_return = 1;
     goto cleanup;
   }
+  s->config = LoadLSystemConfig("./config.txt");
+  if (!s->config) {
+    printf("Error parsing ./config.txt.\n");
+    to_return = 1;
+    goto cleanup;
+  }
+  printf("Config loaded OK!\n");
+  // TODO: Create the actual L-system
+  //  - Parse the config file
+  //    - If the config file is faulty, then display some basic test model, to
+  //      avoid closing the program if someone mistakenly reloads a bad config.
+  //  - Iterate the string. Create an LSystem type, probably.
+  //  - Make the turtle follow the rules.
   if (!GenerateVertices(s)) {
     printf("Failed generating vertices.\n");
     to_return = 1;

@@ -2,6 +2,7 @@ gcc -Wall -Werror -O3 -o l_system_3d ^
   l_system_3d.c ^
   l_system_mesh.c ^
   turtle_3d.c ^
+  parse_config.c ^
   utilities.c ^
   glad\src\glad.c ^
   -I cglm\include ^

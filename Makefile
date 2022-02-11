@@ -17,12 +17,17 @@ l_system_mesh.o: l_system_mesh.c l_system_mesh.h utilities.h
 turtle_3d.o: turtle_3d.c turtle_3d.h
 	gcc $(CFLAGS) -c -o turtle_3d.o turtle_3d.c -I cglm/include
 
-l_system_3d: l_system_3d.c l_system_mesh.o turtle_3d.o utilities.o
+parse_config.o: parse_config.c parse_config.h turtle_3d.h
+	gcc $(CFLAGS) -c -o parse_config.o parse_config.c
+
+l_system_3d: l_system_3d.c l_system_mesh.o turtle_3d.o utilities.o \
+	parse_config.o
 	gcc $(CFLAGS) -o l_system_3d l_system_3d.c \
 		glad/src/glad.c \
 		utilities.o \
 		l_system_mesh.o \
 		turtle_3d.o \
+		parse_config.o \
 		-I glad/include \
 		-I cglm/include \
 		$(GLFW_CFLAGS)
