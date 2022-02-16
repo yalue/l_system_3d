@@ -1,12 +1,16 @@
-# Draw a dragon curve.
+# Draw two connected dragon curves.
+# P = set the initial color to purple.
+# F = draw a dragon curve
+# R = rotate and change color
 init PFRF
+
 F F+G
 G F-G
 
 actions
 
-# Make the initial portion purple.
 P
+# Set color to purple.
 set_color_r 0.7
 set_color_g 0.2
 set_color_b 1.0
@@ -23,12 +27,12 @@ move_forward 1.0
 -
 rotate -90.0
 
-# Make the rotated portion green.
 R
+pitch 90.0
+# Set color to a bright-ish green.
 set_color_r 0.2
 set_color_g 0.9
 set_color_b 0.2
-pitch 90.0
 
 +
 # Comments can go anywhere, so long as the '#' is at the start of the line.
