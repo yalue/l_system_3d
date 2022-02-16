@@ -201,6 +201,22 @@ static int DecreaseIterations(ApplicationState *s) {
   return 1;
 }
 
+// Reloads the config file from ./config.txt. If this fails, then we'll just
+// print a message and return. (The config can be faulty at runtime, but we
+// won't start the program unless it's OK.)
+static void ReloadConfig(ApplicationState *s) {
+  LSystemConfig *new_config = NULL;
+  LSystemConfig *old_config = s->config;
+  new_config = LoadLSystemConfig("./config.txt");
+  if (!new_config) {
+    printf("Failed loading new config file.\n");
+    return;
+  }
+  s->config = new_config;
+  DestroyLSystemConfig(old_config);
+  printf("Config updated OK.\n");
+}
+
 static int ProcessInputs(ApplicationState *s) {
   int pressed;
   if (glfwGetKey(s->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -227,6 +243,16 @@ static int ProcessInputs(ApplicationState *s) {
     printf("New L-system length: %.02f MB.\n", ToMB(s->l_system_length));
   } else if ((s->key_pressed_tmp == GLFW_KEY_DOWN) && !pressed) {
     // Down pressed -> down released
+    s->key_pressed_tmp = 0;
+  }
+  pressed = glfwGetKey(s->window, GLFW_KEY_R) == GLFW_PRESS;
+  if (!s->key_pressed_tmp && pressed) {
+    // Nothing pressed -> R pressed
+    s->key_pressed_tmp = GLFW_KEY_R;
+    ReloadConfig(s);
+    if (!GenerateVertices(s)) return 0;
+  } else if ((s->key_pressed_tmp == GLFW_KEY_R) && !pressed) {
+    // R pressed -> R released
     s->key_pressed_tmp = 0;
   }
   return 1;
@@ -338,7 +364,11 @@ int main(int argc, char **argv) {
     to_return = 1;
     goto cleanup;
   }
-  // TODO: Display a test model if the config is faulty.
+  if (!IncreaseIterations(s)) {
+    printf("Error running first L-system iteration.\n");
+    to_return = 1;
+    goto cleanup;
+  }
   if (!GenerateVertices(s)) {
     printf("Failed generating vertices.\n");
     to_return = 1;

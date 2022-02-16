@@ -1,7 +1,45 @@
 3D L-System Viewer
 ==================
 
-I will write a README when the project is done.
+This is a small OpenGL program that renders uses an L-system and turtle
+graphics to draw 3D fractals.
+
+
+Compiling
+=========
+
+Building this requires `gcc` to be installed and available on your path, and
+for the GLFW to be installed.
+
+On Linux
+--------
+
+Edit the `Makefile` to replace the `GLFW_DIR` variable with the path where GLFW
+is installed on your system. Alternatively, set the `GLFW_DIR` environment
+variable. Afterwards run `make` to compile the program.
+
+On Windows
+----------
+
+Edit `build_windows.bat` and replace any occurrences of `C:\bin\glfw-3.3.3\`
+with the path where GLFW is installed on your system. Afterwards, run
+`build_windows.bat` to compile the program.
+
+
+Running the Program
+===================
+
+Run `./l_system_3d` (or `l_system_3d.exe` on Windows). A window should appear
+displaying an L-system rendering. This can be controlled using some simple
+keypresses:
+
+ - Increase iterations by 1: Press the "up" arrow key.
+
+ - Decrease iterations by 1: Press the "down" arrow key.
+
+ - Reload the config file: Press the "R" key.
+
+ - Quit the program: Close the window, or press the escape key.
 
 Configuring the L-System
 ========================
@@ -14,7 +52,9 @@ encountering each character. (The `actions` line must occur exactly once in the
 config.)
 
 If you want a longer example, the default "config.txt" contains instructions
-for drawing the dragon curve, and is shown below:
+for drawing a pair of connected dragon curves. A simpler, single, dragon-curve
+example can be obtained by replacing the contents of "config.txt" with the
+following lines:
 ```
 init F
 F F+G
