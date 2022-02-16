@@ -4,6 +4,8 @@
 This is a small OpenGL program that renders uses an L-system and turtle
 graphics to draw 3D fractals.
 
+![Example screenshot](./sample_screenshot.png)
+
 
 Compiling
 =========
