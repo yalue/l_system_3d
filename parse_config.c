@@ -280,9 +280,34 @@ static int TryParseAction(LSystemConfig *config, const char *token,
 // Parses the action rules from the config file. Expects to be on the line
 // immediately following the line containing "actions". Returns 0 on error.
 static int ParseActionRules(LSystemConfig *config) {
+  char *action_names[] = {
+    "move_forward",
+    "move_forward_nodraw",
+    "rotate",
+    "yaw",
+    "pitch",
+    "roll",
+    "set_color_r",
+    "set_color_g",
+    "set_color_b",
+    "set_color_a",
+  };
+  TurtleInstruction action_fns[] = {
+    MoveTurtleForward,
+    MoveTurtleForwardNoDraw,
+    RotateTurtle,
+    RotateTurtle,
+    PitchTurtle,
+    RollTurtle,
+    SetTurtleRed,
+    SetTurtleGreen,
+    SetTurtleBlue,
+    SetTurtleAlpha,
+  };
   char *current_line = NULL;
   uint8_t current_char = 0;
-  int result;
+  int possible_action_count = sizeof(action_fns) / sizeof(TurtleInstruction);
+  int result, i;
   while (1) {
     current_line = GetNextNonBlankLine(config->f);
     if (!current_line) break;
@@ -306,36 +331,17 @@ static int ParseActionRules(LSystemConfig *config) {
         "char was specified (line %d).\n", config->f->current_line);
       return 0;
     }
-    // We're not looking at a char so we must be looking at a rule.
-    result = TryParseAction(config, "move_forward", current_line, current_char,
-      MoveTurtleForward);
-    if (result < 0) return 0;
-    if (result > 0) continue;
-    result = TryParseAction(config, "rotate", current_line, current_char,
-      RotateTurtle);
-    if (result < 0) return 0;
-    if (result > 0) continue;
-    result = TryParseAction(config, "yaw", current_line, current_char,
-      RotateTurtle);
-    if (result < 0) return 0;
-    if (result > 0) continue;
-    result = TryParseAction(config, "pitch", current_line, current_char,
-      PitchTurtle);
-    if (result < 0) return 0;
-    if (result > 0) continue;
-    result = TryParseAction(config, "roll", current_line, current_char,
-      RollTurtle);
-    if (result < 0) return 0;
-    if (result > 0) continue;
-    result = TryParseAction(config, "move_forward_nodraw", current_line,
-      current_char, MoveTurtleForwardNoDraw);
-    if (result < 0) return 0;
-    if (result > 0) continue;
-
-    // We've checked for all supported actions at this point.
-    printf("Got invalid action at line %d of the config.\n",
-      config->f->current_line);
-    return 0;
+    // We're not looking at a char so we must be looking at an instruction.
+    for (i = 0; i < possible_action_count; i++) {
+      result = TryParseAction(config, action_names[i], current_line,
+        current_char, action_fns[i]);
+      if (result < 0) return 0;
+      if (result == 0) continue;
+      if (result > 0) break;
+      printf("Got invalid action at line %d of the config.\n",
+        config->f->current_line);
+      return 0;
+    }
   }
   return 1;
 }

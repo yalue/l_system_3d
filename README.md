@@ -112,6 +112,15 @@ The following list of actions are supported:
  - `move_forward_nodraw <distance>`: Like `move_forward`, but does not draw a
    line segment.
 
+ - `set_color_r <value>`: Sets the turtle's red color channel to the given
+   value. The value will be clamped to be between 0.0 and 1.0.
+
+ - `set_color_g <value>`: The same as `set_color_r`, but for the green channel.
+
+ - `set_color_b <value>`: The same as `set_color_r`, but for the blue channel.
+
+ - `set_color_a <value>`: The same as `set_color_r`, but for the alpha channel.
+
 Prior to taking any actions, the turtle is initialized at position (0, 0, 0),
 facing in the positive-X direction, with its pitch and roll set so that its
 "back" is facing upwards; in the positive-Y direction.

@@ -49,6 +49,11 @@ void ResetTurtle3D(Turtle3D *t);
 // pointer is no longer valid after this returns.
 void DestroyTurtle3D(Turtle3D *t);
 
+// Sets the model and normal matrices for the turtle's vertices, and the
+// location offset vector (to be added to each vertex location) that will
+// center the mesh on 0, 0, 0. Returns 0 on error.
+int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset);
+
 // The type used by all turtle-movement instructions. Some instructions may not
 // use the floating-point parameter. All instructions must return 0 on error
 // or nonzero on success.
@@ -72,6 +77,12 @@ int PitchTurtle(Turtle3D *t, float angle);
 // Instructs the turtle to rotate about its forward-facing axis by the given
 // angle. Does not change the turtle's position. The angle is in degrees.
 int RollTurtle(Turtle3D *t, float angle);
+
+// Set the corresponding channels in the turtle's current output color.
+int SetTurtleRed(Turtle3D *t, float red);
+int SetTurtleGreen(Turtle3D *t, float green);
+int SetTurtleBlue(Turtle3D *t, float blue);
+int SetTurtleAlpha(Turtle3D *t, float alpha);
 
 #endif  // TURTLE_3D_H
 

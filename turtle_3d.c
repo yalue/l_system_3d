@@ -60,6 +60,48 @@ void DestroyTurtle3D(Turtle3D *t) {
   free(t);
 }
 
+static float Max3(float a, float b, float c) {
+  if (a > b) {
+    if (a >= c) return a;
+    return c;
+  }
+  if (b >= c) return b;
+  return c;
+}
+
+static void ModelToNormalMatrix(mat4 model, mat3 normal) {
+  mat4 dst;
+  glm_mat4_inv(model, dst);
+  glm_mat4_transpose(dst);
+  glm_mat4_pick3(dst, normal);
+}
+
+int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset) {
+  float dx, dy, dz, max_axis;
+  dx = t->max_bounds[0] - t->min_bounds[0];
+  dy = t->max_bounds[1] - t->min_bounds[1];
+  dz = t->max_bounds[2] - t->min_bounds[2];
+  if ((dx < 0) || (dy < 0) || (dz < 0)) {
+    printf("Mesh bounds (deltas %f, %f, %f) not well-formed.\n", dx, dy, dz);
+    return 0;
+  }
+  // Center the model and make it at most 2 units wide in any axis. Start by
+  // computing the amount to add to each vertex to center the mesh.
+  loc_offset[0] = -(dx / 2) - t->min_bounds[0];
+  loc_offset[1] = -(dy / 2) - t->min_bounds[1];
+  loc_offset[2] = -(dz / 2) - t->min_bounds[2];
+  max_axis = Max3(dx, dy, dz);
+  glm_mat4_identity(model);
+  if (max_axis > 0) {
+    glm_scale_uni(model, 2.0 / max_axis);
+  }
+  ModelToNormalMatrix(model, normal);
+  // TODO (eventually): If I get less stupid, combine the loc_offset
+  // translation into the model matrix. This should obviously be possible, but
+  // I just am not good enough to know how.
+  return 1;
+}
+
 // Checks if the internal array has space for two more vertices (another line
 // segment). If not, this attempts to reallocate the turtle's internal array of
 // vertices, doubling its capacity. Returns 0 on error.
@@ -173,5 +215,31 @@ int PitchTurtle(Turtle3D *t, float angle) {
 
 int RollTurtle(Turtle3D *t, float angle) {
   glm_vec3_rotate(t->up, ToRadians(angle), t->forward);
+  return 1;
+}
+
+static float ClampColor(float c) {
+  if (c <= 0.0) return 0;
+  if (c >= 1.0) return 1.0;
+  return c;
+}
+
+int SetTurtleRed(Turtle3D *t, float red) {
+  t->color[0] = ClampColor(red);
+  return 1;
+}
+
+int SetTurtleGreen(Turtle3D *t, float green) {
+  t->color[1] = ClampColor(green);
+  return 1;
+}
+
+int SetTurtleBlue(Turtle3D *t, float blue) {
+  t->color[2] = ClampColor(blue);
+  return 1;
+}
+
+int SetTurtleAlpha(Turtle3D *t, float alpha) {
+  t->color[3] = ClampColor(alpha);
   return 1;
 }

@@ -33,12 +33,13 @@ typedef struct {
   GLuint vao;
   GLuint vbo;
   // The model and normal matrices used when drawing this mesh.
-  // TODO: Try to just make these identity matrices? Or perhaps use these to
-  // scale the model to fit in a 1x1x1 cube and sit on the floor?
   mat4 model;
   mat3 normal;
+  // The offset to add to every vertex's location to center the mesh.
+  vec3 location_offset;
   GLint model_uniform_index;
   GLint normal_uniform_index;
+  GLint location_offset_uniform_index;
 } LSystemMesh;
 
 // Prints the vertex's info to stdout.

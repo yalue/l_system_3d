@@ -1,6 +1,7 @@
 #include <errno.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <glad/glad.h>
@@ -85,44 +86,148 @@ static int SetupUniformBuffer(ApplicationState *s) {
   return CheckGLErrors();
 }
 
-static int Rotate90(Turtle3D *t) {
-  return RotateTurtle(t, 90);
-}
-
 // This generates the vertices for the L-system, and updates the mesh. Returns
 // 0 on error.
 static int GenerateVertices(ApplicationState *s) {
   Turtle3D *t = s->turtle;
-  t->color[0] = 1;
-  t->color[1] = 0;
-  t->color[2] = 0;
-  if (!MoveTurtleForward(t, 1.0)) return 0;
-  if (!Rotate90(t)) return 0;
-  t->color[0] = 0;
-  t->color[1] = 1;
-  if (!MoveTurtleForward(t, 1.0)) return 0;
-  if (!Rotate90(t)) return 0;
-  t->color[1] = 0;
-  t->color[2] = 1;
-  if (!MoveTurtleForward(t, 1.0)) return 0;
-  if (!Rotate90(t)) return 0;
-  t->color[0] = 1;
-  t->color[1] = 1;
-  if (!MoveTurtleForward(t, 1.0)) return 0;
-  if (!PitchTurtle(t, 90)) return 0;
-  t->color[0] = 0.7;
-  t->color[1] = 0.1;
-  if (!MoveTurtleForward(t, 0.5)) return 0;
+  ActionRule *r = NULL;
+  int result;
+  uint32_t char_index, inst_index;
+  uint8_t c;
+  ResetTurtle3D(t);
+  for (char_index = 0; char_index < s->l_system_length; char_index++) {
+    c = s->l_system_string[char_index];
+    r = s->config->actions + c;
+    for (inst_index = 0; inst_index < r->length; inst_index++) {
+      result = r->instructions[inst_index](t, r->args[inst_index]);
+      if (!result) {
+        printf("Failed running instruction %d for char %c.\n", (int) inst_index,
+          (char) c);
+        return 0;
+      }
+    }
+  }
+
   if (!SetMeshVertices(s->mesh, t->vertices, t->vertex_count)) {
     printf("Failed setting vertices.\n");
+    return 0;
+  }
+  if (!SetTransformInfo(s->turtle, s->mesh->model, s->mesh->normal,
+    s->mesh->location_offset)) {
+    printf("Failed getting transform matrices.\n");
     return 0;
   }
   return 1;
 }
 
+static float ToMB(uint64_t bytes) {
+  float tmp = (float) bytes;
+  return tmp / (1024.0 * 1024.0);
+}
+
+// Iterates the L-system exactly once. Returns 0 on error. Does not update the
+// mesh.
+static int IncreaseIterations(ApplicationState *s) {
+  uint32_t new_length = 0;
+  ReplacementRule *r = NULL;
+  uint8_t *new_buffer = NULL;
+  uint8_t *dst = NULL;
+  uint8_t *loc = s->l_system_string;
+  uint8_t c;
+  // First iterate over the string to pre-calcuate the size of the buffer we'll
+  // need.
+  while (*loc) {
+    c = *loc;
+    loc++;
+    r = s->config->replacements + c;
+    if (!r->used) {
+      new_length++;
+      continue;
+    }
+    new_length += r->length;
+  }
+  // +1 to ensure a null terminator.
+  new_buffer = (uint8_t *) calloc(1, new_length + 1);
+  if (!new_buffer) {
+    printf("Failed allocating new %f MB L-system string.\n", ToMB(new_length));
+    return 0;
+  }
+  // Iterate over the string again, this time populating the new buffer.
+  dst = new_buffer;
+  loc = s->l_system_string;
+  while (*loc) {
+    c = *loc;
+    loc++;
+    r = s->config->replacements + c;
+    if (!r->used) {
+      // Keep the same char if no replacement was defined.
+      *dst = c;
+      dst++;
+      continue;
+    }
+    memcpy(dst, r->replacement, r->length);
+    dst += r->length;
+    continue;
+  }
+  free(s->l_system_string);
+  s->l_system_string = new_buffer;
+  s->l_system_length = new_length;
+  s->l_system_iterations++;
+  return 1;
+}
+
+// Reduces the L-system iterations by one. Unfortunately, this is implemented
+// by recomputing the entire thing. Does nothing if we're already at 0
+// iterations.
+static int DecreaseIterations(ApplicationState *s) {
+  uint32_t target_iterations, i;
+  if (s->l_system_iterations == 0) {
+    printf("Can't decrease iterations. Already at 0 iterations.\n");
+    return 1;
+  }
+  target_iterations = s->l_system_iterations - 1;
+  // TODO: DecreaseIterations somestimes seems to segfault. Probably happens
+  // around here.
+  free(s->l_system_string);
+  s->l_system_string = (uint8_t *) strdup(s->config->init);
+  if (!s->l_system_string) {
+    printf("Failed copying the initial L-system string.\n");
+    return 0;
+  }
+  s->l_system_iterations = 0;
+  for (i = 0; i < target_iterations; i++) {
+    if (!IncreaseIterations(s)) return 0;
+  }
+  return 1;
+}
+
 static int ProcessInputs(ApplicationState *s) {
+  int pressed;
   if (glfwGetKey(s->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(s->window, 1);
+    return 1;
+  }
+  // s->key_pressed_tmp is used to prevent counting one press multiple times,
+  // and to prevent up and down from being pressed together.
+  pressed = glfwGetKey(s->window, GLFW_KEY_UP) == GLFW_PRESS;
+  if (!s->key_pressed_tmp && pressed) {
+    // Nothing pressed -> up pressed
+    s->key_pressed_tmp = GLFW_KEY_UP;
+    if (!(IncreaseIterations(s) && GenerateVertices(s))) return 0;
+    printf("New L-system length: %.02f MB.\n", ToMB(s->l_system_length));
+  } else if ((s->key_pressed_tmp == GLFW_KEY_UP) && !pressed) {
+    // Up pressed -> up released
+    s->key_pressed_tmp = 0;
+  }
+  pressed = glfwGetKey(s->window, GLFW_KEY_DOWN) == GLFW_PRESS;
+  if (!s->key_pressed_tmp && pressed) {
+    // Nothing pressed -> down pressed
+    s->key_pressed_tmp = GLFW_KEY_DOWN;
+    if (!(DecreaseIterations(s) && GenerateVertices(s))) return 0;
+    printf("New L-system length: %.02f MB.\n", ToMB(s->l_system_length));
+  } else if ((s->key_pressed_tmp == GLFW_KEY_DOWN) && !pressed) {
+    // Down pressed -> down released
+    s->key_pressed_tmp = 0;
   }
   return 1;
 }
@@ -227,12 +332,13 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
   printf("Config loaded OK!\n");
-  // TODO: Create the actual L-system
-  //  - Parse the config file
-  //    - If the config file is faulty, then display some basic test model, to
-  //      avoid closing the program if someone mistakenly reloads a bad config.
-  //  - Iterate the string. Create an LSystem type, probably.
-  //  - Make the turtle follow the rules.
+  s->l_system_string = (uint8_t *) strdup(s->config->init);
+  if (!s->l_system_string) {
+    printf("Error initializing L-system string.\n");
+    to_return = 1;
+    goto cleanup;
+  }
+  // TODO: Display a test model if the config is faulty.
   if (!GenerateVertices(s)) {
     printf("Failed generating vertices.\n");
     to_return = 1;

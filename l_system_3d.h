@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 #include <glad/glad.h>
@@ -24,6 +25,10 @@ typedef struct {
   Turtle3D *turtle;
   GLuint ubo;
   SharedUniforms shared_uniforms;
+  int key_pressed_tmp;
+  uint32_t l_system_iterations;
+  uint32_t l_system_length;
+  uint8_t *l_system_string;
 } ApplicationState;
 
 // Allocates an ApplicationState struct and initializes its values to 0.

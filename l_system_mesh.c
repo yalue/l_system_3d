@@ -140,6 +140,10 @@ static int SetupShaderProgram(LSystemMesh *m) {
   m->shader_program = p;
   if (!UniformIndex(p, "model", &(m->model_uniform_index))) return 0;
   if (!UniformIndex(p, "normal", &(m->normal_uniform_index))) return 0;
+  if (!UniformIndex(p, "location_offset",
+    &(m->location_offset_uniform_index))) {
+    return 0;
+  }
   block_index = glGetUniformBlockIndex(p, "SharedUniforms");
   if (block_index == GL_INVALID_INDEX) {
     printf("Failed getting index of shared uniform block.\n");
@@ -215,6 +219,8 @@ int DrawMesh(LSystemMesh *m) {
   glUniformMatrix4fv(m->model_uniform_index, 1, GL_FALSE, (float *) m->model);
   glUniformMatrix3fv(m->normal_uniform_index, 1, GL_FALSE,
     (float *) m->normal);
+  glUniform3fv(m->location_offset_uniform_index, 1,
+    (float *) m->location_offset);
   glDrawArrays(GL_LINES, 0, m->vertex_count);
   return CheckGLErrors();
 }
