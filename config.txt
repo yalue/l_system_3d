@@ -1,11 +1,11 @@
-init CP
+init P
 
 # I use the () to revert the position back to the "current" pyramid's bottom
 # left, facing right, in preparation for drawing the next pyramid.
 
 # Replace one square pyramid with 5 pyramids, always ending at the bottom left
 # corner facing right.
-P ((CPN1PN-N2PN-N3P)UND4P)
+P ((1PN2PN-N3PN-N4P)UND5P)
 
 # N is used to move forward the width of a single pyramid. It doubles every
 # iteration, since every existing pyramid's width doubles at the same rate.
@@ -13,29 +13,29 @@ N NN
 
 actions
 
-# C, 1, 2, 3, and 4 all just set colors. You can remove them from the
+# 1, 2, 3, 4, and 5 all just set colors. You can remove them from the
 # replacement string to simplify it if you want.
-C
+1
 set_color_r 0.7
 set_color_g 0.3
 set_color_b 1.0
 
-1
+2
 set_color_r 1.0
 set_color_g 0.2
 set_color_b 0.2
 
-2
+3
 set_color_r 0.2
 set_color_g 1.0
 set_color_b 0.2
 
-3
+4
 set_color_r 0.2
 set_color_g 0.2
 set_color_b 1.0
 
-4
+5
 set_color_r 1.0
 set_color_g 1.0
 set_color_b 1.0

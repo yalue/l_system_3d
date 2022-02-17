@@ -363,11 +363,7 @@ int main(int argc, char **argv) {
     to_return = 1;
     goto cleanup;
   }
-  if (!IncreaseIterations(s)) {
-    printf("Error running first L-system iteration.\n");
-    to_return = 1;
-    goto cleanup;
-  }
+  s->l_system_length = strlen(s->config->init);
   if (!GenerateVertices(s)) {
     printf("Failed generating vertices.\n");
     to_return = 1;
