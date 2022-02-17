@@ -6,12 +6,14 @@ graphics to draw 3D fractals.
 
 ![Example screenshot](./sample_screenshot.png)
 
+(It looks better in motion!)
+
 
 Compiling
 =========
 
 Building this requires `gcc` to be installed and available on your path, and
-for the GLFW to be installed.
+for GLFW to be installed.
 
 On Linux
 --------
@@ -135,10 +137,10 @@ Available Actions
 
 The following list of actions are supported:
 
- - `move_forward <distance>`: Moves the turtle forward, drawing a line, the
-   given distance. The distance is a floating-point number of units. Units are
-   not particularly relevant, because the resulting 3D rendering will be scaled
-   to fit in the viewport regardless.
+ - `move_forward <distance>`: Moves the turtle forward the given distance, and
+   draws the line segment along its path. The distance is a floating-point
+   number of units. Units are not particularly relevant, because the resulting
+   3D rendering will be scaled to fit in the viewport regardless.
 
  - `rotate <degrees>`: Rotates the turtle to its left by the given
    floating-point number of degrees.

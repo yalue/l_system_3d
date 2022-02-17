@@ -1,11 +1,14 @@
 init CP
 
-# The () around the pyramids make it easier for me to keep track of the
-# positions when moving between the 5 pyramids.
+# I use the () to revert the position back to the "current" pyramid's bottom
+# left, facing right, in preparation for drawing the next pyramid.
 
 # Replace one square pyramid with 5 pyramids, always ending at the bottom left
 # corner facing right.
 P ((CPN1PN-N2PN-N3P)UND4P)
+
+# N is used to move forward the width of a single pyramid. It doubles every
+# iteration, since every existing pyramid's width doubles at the same rate.
 N NN
 
 actions
@@ -54,14 +57,14 @@ U
 rotate 45
 pitch 45
 
-# Undo the "upwards rotation in preparation for drawing the upper pyramid.
+# Undo the "U" rotation in preparation for drawing the upper pyramid.
 D
 pitch -45
 rotate -45
 
 
 # P = draw a single square pyramid. Starts at the bottom left corner facing
-# right, and ending at the bottom right corner, facing right.
+# right, and ends at the same place.
 P
 
 # Keep track of our start position, we'll return here at the end.
