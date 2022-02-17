@@ -186,14 +186,13 @@ static int DecreaseIterations(ApplicationState *s) {
     return 1;
   }
   target_iterations = s->l_system_iterations - 1;
-  // TODO: DecreaseIterations somestimes seems to segfault. Probably happens
-  // around here.
   free(s->l_system_string);
   s->l_system_string = (uint8_t *) strdup(s->config->init);
   if (!s->l_system_string) {
     printf("Failed copying the initial L-system string.\n");
     return 0;
   }
+  s->l_system_length = strlen(s->config->init);
   s->l_system_iterations = 0;
   for (i = 0; i < target_iterations; i++) {
     if (!IncreaseIterations(s)) return 0;

@@ -291,6 +291,8 @@ static int ParseActionRules(LSystemConfig *config) {
     "set_color_g",
     "set_color_b",
     "set_color_a",
+    "push_position",
+    "pop_position",
   };
   TurtleInstruction action_fns[] = {
     MoveTurtleForward,
@@ -303,6 +305,8 @@ static int ParseActionRules(LSystemConfig *config) {
     SetTurtleGreen,
     SetTurtleBlue,
     SetTurtleAlpha,
+    PushTurtlePosition,
+    PopTurtlePosition,
   };
   char *current_line = NULL;
   uint8_t current_char = 0;

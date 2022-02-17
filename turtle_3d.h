@@ -1,22 +1,38 @@
 #ifndef TURTLE_3D_H
 #define TURTLE_3D_H
 #include <cglm/cglm.h>
+#include <stdint.h>
 #include "l_system_mesh.h"
 
-// Holds the state of a 3D "turtle" that follows instructions relative to
-// itself in 3D space.
+// Holds the turtle's position and orientation information.
 typedef struct {
   // The turtle's current location.
   vec3 position;
   // The turtle's previous location. Can be arbitrary if there is no previous
   // position.
   vec3 prev_position;
-  // The current with which the turtle draws lines.
-  vec4 color;
   // This determines the turtle's current orientation. Must always be
   // normalized and orthogonal.
   vec3 forward;
   vec3 up;
+} TurtlePosition;
+
+// Holds a stack of turtle positions.
+typedef struct {
+  // The number of positions currently in the stack.
+  uint32_t size;
+  // The max size of the buffer before it needs to be expanded.
+  uint32_t capacity;
+  // The actual buffer being used as a stack.
+  TurtlePosition *buffer;
+} PositionStack;
+
+// Holds the state of a 3D "turtle" that follows instructions relative to
+// itself in 3D space.
+typedef struct {
+  TurtlePosition p;
+  // The current with which the turtle draws lines.
+  vec4 color;
 
   // Defines a cube bounding the turtle's entire path so far. This *must* be
   // well-formed, i.e. each min component must be less than each max component.
@@ -31,10 +47,8 @@ typedef struct {
   MeshVertex *vertices;
   uint32_t vertex_count;
   uint32_t vertex_capacity;
+  PositionStack position_stack;
 } Turtle3D;
-
-// TODO: add push and pop instructions that keep the turtle's position,
-// previous position, orientation, and color on a stack.
 
 // Allocates a new turtle, at position 0, 0, 0, with no vertices. Returns NULL
 // on error. The turtle starts out facing right, with up in the positive Y
@@ -83,6 +97,15 @@ int SetTurtleRed(Turtle3D *t, float red);
 int SetTurtleGreen(Turtle3D *t, float green);
 int SetTurtleBlue(Turtle3D *t, float blue);
 int SetTurtleAlpha(Turtle3D *t, float alpha);
+
+// Saves the turtle's position on a stack. Returns 0 on error. The argument is
+// ignored.
+int PushTurtlePosition(Turtle3D *t, float ignored);
+
+// Pops the turtle's position off the stack of positions. Returns 0 on error.
+// It's an error if this instruction is issued when the stack is empty. The
+// argument is ignored.
+int PopTurtlePosition(Turtle3D *t, float ignored);
 
 #endif  // TURTLE_3D_H
 

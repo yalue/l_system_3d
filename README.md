@@ -163,6 +163,15 @@ The following list of actions are supported:
 
  - `set_color_a <value>`: The same as `set_color_r`, but for the alpha channel.
 
+ - `push_position 0.0`: Pushes the turtle's current position onto a stack of
+   positions, so that it can be restored later. The "0.0" is ignored, but
+   required to simplify internal config-parsing logic.
+
+ - `pop_position 0.0`: Restores the turtle's current position from whichever
+   position is on top of the stack. Removes the position on top of the stack.
+   It is an error to encounter this instruction if the stack is already empty.
+   Once again, the "0.0" argument is ignored, but required in the config.
+
 Prior to taking any actions, the turtle is initialized at position (0, 0, 0),
 facing in the positive-X direction, with its pitch and roll set so that its
 "back" is facing upwards; in the positive-Y direction.
