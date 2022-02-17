@@ -1,40 +1,105 @@
-# Draw two connected dragon curves.
-# P = set the initial color to purple.
-# F = draw a dragon curve
-# R = rotate and change color
-init PFRF
+init CP
 
-F F+G
-G F-G
+# The () around the pyramids make it easier for me to keep track of the
+# positions when moving between the 5 pyramids.
+
+# Replace one square pyramid with 5 pyramids, always ending at the bottom left
+# corner facing right.
+P ((CPN1PN-N2PN-N3P)UND4P)
+N NN
 
 actions
 
-P
-# Set color to purple.
+# C, 1, 2, 3, and 4 all just set colors. You can remove them from the
+# replacement string to simplify it if you want.
+C
 set_color_r 0.7
+set_color_g 0.3
+set_color_b 1.0
+
+1
+set_color_r 1.0
+set_color_g 0.2
+set_color_b 0.2
+
+2
+set_color_r 0.2
+set_color_g 1.0
+set_color_b 0.2
+
+3
+set_color_r 0.2
 set_color_g 0.2
 set_color_b 1.0
 
-B
-set_turtle_B
-
-F
-move_forward 1.0
-
-G
-move_forward 1.0
+4
+set_color_r 1.0
+set_color_g 1.0
+set_color_b 1.0
 
 -
-rotate -90.0
+rotate 90
 
-R
-pitch 90.0
-# Set color to a bright-ish green.
-set_color_r 0.2
-set_color_g 0.9
-set_color_b 0.2
+(
+push_position 0.0
 
-+
-# Comments can go anywhere, so long as the '#' is at the start of the line.
-rotate 90.0
+)
+pop_position 0.0
+
+N
+move_forward_nodraw 1.0
+
+# Face "upwards" to move to the upper pyramid.
+U
+rotate 45
+pitch 45
+
+# Undo the "upwards rotation in preparation for drawing the upper pyramid.
+D
+pitch -45
+rotate -45
+
+
+# P = draw a single square pyramid. Starts at the bottom left corner facing
+# right, and ending at the bottom right corner, facing right.
+P
+
+# Keep track of our start position, we'll return here at the end.
+push_position 0
+
+# Bottom left -> bottom right, up edge from bottom right
+move_forward 1
+push_position 0
+rotate 135
+pitch 45
+move_forward 1
+pop_position 0
+
+# Bottom right -> up right, up edge from up right
+rotate 90
+move_forward 1
+push_position 0
+rotate 135
+pitch 45
+move_forward 1
+pop_position 0
+
+# up right -> up left, up edge from up left
+rotate 90
+move_forward 1
+push_position 0
+rotate 135
+pitch 45
+move_forward 1
+pop_position 0
+
+# up left -> bottom left, up edge from bottom left
+rotate 90
+move_forward 1
+rotate 135
+pitch 45
+move_forward 1
+
+# Return to bottom left, facing right.
+pop_position 0
 

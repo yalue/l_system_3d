@@ -123,7 +123,7 @@ int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset) {
   max_axis = Max3(dx, dy, dz);
   glm_mat4_identity(model);
   if (max_axis > 0) {
-    glm_scale_uni(model, 2.0 / max_axis);
+    glm_scale_uni(model, MESH_CUBE_SIZE / max_axis);
   }
   ModelToNormalMatrix(model, normal);
   // TODO (eventually): If I get less stupid, combine the loc_offset

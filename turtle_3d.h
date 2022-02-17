@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include "l_system_mesh.h"
 
+// The length per edge of the centered cube that the turtle's resulting mesh
+// is scaled to fit into.
+#define MESH_CUBE_SIZE (4.0)
+
 // Holds the turtle's position and orientation information.
 typedef struct {
   // The turtle's current location.

@@ -267,9 +267,9 @@ static void UpdateCamera(ApplicationState *s) {
   glm_vec3_zero(up);
   up[1] = 1.0;
   tmp = glfwGetTime() / 4.0;
-  position[0] = sin(tmp) * 4.0;
-  position[1] = 3.0;
-  position[2] = cos(tmp) * 4.0;
+  position[0] = sin(tmp) * 5.0;
+  position[1] = 2.0;
+  position[2] = cos(tmp) * 5.0;
   glm_lookat(position, target, up, s->shared_uniforms.view);
   glm_vec4(position, 0, s->shared_uniforms.camera_position);
 }

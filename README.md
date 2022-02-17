@@ -54,7 +54,7 @@ encountering each character. (The `actions` line must occur exactly once in the
 config.)
 
 If you want a longer example, the default "config.txt" contains instructions
-for drawing a pair of connected dragon curves. A simpler, single, dragon-curve
+for drawing a multi-colored Sierpinski pyramid. A simpler, single, dragon-curve
 example can be obtained by replacing the contents of "config.txt" with the
 following lines:
 ```
