@@ -216,6 +216,13 @@ static void ReloadConfig(ApplicationState *s) {
   printf("Config updated OK.\n");
 }
 
+static void PrintMemoryUsage(ApplicationState *s) {
+  float vbo_size_mb = ToMB(sizeof(MeshVertex) * s->mesh->vertex_count);
+  printf("L-system size is now %.02f MB.\n", ToMB(s->l_system_length));
+  printf("Drawing %u vertices, taking %.02f MB.\n",
+    (unsigned) s->mesh->vertex_count, vbo_size_mb);
+}
+
 static int ProcessInputs(ApplicationState *s) {
   int pressed;
   if (glfwGetKey(s->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -229,7 +236,7 @@ static int ProcessInputs(ApplicationState *s) {
     // Nothing pressed -> up pressed
     s->key_pressed_tmp = GLFW_KEY_UP;
     if (!(IncreaseIterations(s) && GenerateVertices(s))) return 0;
-    printf("New L-system length: %.02f MB.\n", ToMB(s->l_system_length));
+    PrintMemoryUsage(s);
   } else if ((s->key_pressed_tmp == GLFW_KEY_UP) && !pressed) {
     // Up pressed -> up released
     s->key_pressed_tmp = 0;
@@ -239,7 +246,7 @@ static int ProcessInputs(ApplicationState *s) {
     // Nothing pressed -> down pressed
     s->key_pressed_tmp = GLFW_KEY_DOWN;
     if (!(DecreaseIterations(s) && GenerateVertices(s))) return 0;
-    printf("New L-system length: %.02f MB.\n", ToMB(s->l_system_length));
+    PrintMemoryUsage(s);
   } else if ((s->key_pressed_tmp == GLFW_KEY_DOWN) && !pressed) {
     // Down pressed -> down released
     s->key_pressed_tmp = 0;
