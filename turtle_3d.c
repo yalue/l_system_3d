@@ -35,6 +35,19 @@ static void FreePositionStack(PositionStack *s) {
   memset(s, 0, sizeof(*s));
 }
 
+static int InitializeColorStack(ColorStack *s) {
+  s->size = 0;
+  s->buffer = (float *) calloc(INITIAL_STACK_CAPACITY, 4 * sizeof(float));
+  if (!s->buffer) return 0;
+  s->capacity = INITIAL_STACK_CAPACITY;
+  return 1;
+}
+
+static void FreeColorStack(ColorStack *s) {
+  free(s->buffer);
+  memset(s, 0, sizeof(*s));
+}
+
 Turtle3D* CreateTurtle3D(void) {
   Turtle3D *to_return = NULL;
   to_return = (Turtle3D *) calloc(1, sizeof(*to_return));
@@ -52,6 +65,13 @@ Turtle3D* CreateTurtle3D(void) {
   if (!InitializePositionStack(&(to_return->position_stack))) {
     printf("Failed initializing stack of turtle positions.\n");
     free(to_return->vertices);
+    free(to_return);
+    return NULL;
+  }
+  if (!InitializeColorStack(&(to_return->color_stack))) {
+    printf("Failed initializing stack of turtle colors.\n");
+    free(to_return->vertices);
+    free(to_return->position_stack.buffer);
     free(to_return);
     return NULL;
   }
@@ -80,12 +100,14 @@ void ResetTurtle3D(Turtle3D *t) {
   t->vertex_count = 0;
   // Clear the stack. As with the vertex array, don't free it, though.
   t->position_stack.size = 0;
+  t->color_stack.size = 0;
 }
 
 void DestroyTurtle3D(Turtle3D *t) {
   if (!t) return;
   free(t->vertices);
   FreePositionStack(&(t->position_stack));
+  FreeColorStack(&(t->color_stack));
   memset(t, 0, sizeof(*t));
   free(t);
 }
@@ -309,3 +331,48 @@ int PopTurtlePosition(Turtle3D *t, float ignored) {
   s->size--;
   return 1;
 }
+
+int PushTurtleColor(Turtle3D *t, float ignored) {
+  ColorStack *s = &(t->color_stack);
+  float *new_buf = NULL;
+  float *v = NULL;
+  uint32_t new_cap = 0;
+  if (s->size >= s->capacity) {
+    new_cap = s->capacity * 2;
+    if (new_cap < s->capacity) {
+      printf("Turtle color stack overflow.\n");
+      return 0;
+    }
+    new_buf = (float *) realloc(s->buffer, new_cap * 4 * sizeof(float));
+    if (!new_buf) {
+      printf("Failed expanding color stack.\n");
+      return 0;
+    }
+    s->buffer = new_buf;
+    s->capacity = new_cap;
+  }
+  v = s->buffer + (4 * s->size);
+  v[0] = t->color[0];
+  v[1] = t->color[1];
+  v[2] = t->color[2];
+  v[3] = t->color[3];
+  s->size++;
+  return 1;
+}
+
+int PopTurtleColor(Turtle3D *t, float ignored) {
+  ColorStack *s = &(t->color_stack);
+  float *v = NULL;
+  if (s->size == 0) {
+    printf("Turtle color stack is empty.\n");
+    return 0;
+  }
+  s->size--;
+  v = s->buffer + (4 * s->size);
+  t->color[0] = v[0];
+  t->color[1] = v[1];
+  t->color[2] = v[2];
+  t->color[3] = v[3];
+  return 1;
+}
+

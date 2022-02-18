@@ -174,6 +174,12 @@ The following list of actions are supported:
    It is an error to encounter this instruction if the stack is already empty.
    Once again, the "0.0" argument is ignored, but required in the config.
 
+ - `push_color 0.0`: Analogous to `push_position`, but saves the turtle's
+   current color on a stack.
+
+ - `pop_color 0.0`: Analogous to `pop_position`, but restores the last color
+   pushed by `push_color`.
+
 Prior to taking any actions, the turtle is initialized at position (0, 0, 0),
 facing in the positive-X direction, with its pitch and roll set so that its
 "back" is facing upwards; in the positive-Y direction.

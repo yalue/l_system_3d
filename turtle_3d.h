@@ -31,6 +31,14 @@ typedef struct {
   TurtlePosition *buffer;
 } PositionStack;
 
+// Holds a stack of turtle colors.
+typedef struct {
+  uint32_t size;
+  uint32_t capacity;
+  // A buffer of (capacity * 4) floats
+  float *buffer;
+} ColorStack;
+
 // Holds the state of a 3D "turtle" that follows instructions relative to
 // itself in 3D space.
 typedef struct {
@@ -52,6 +60,7 @@ typedef struct {
   uint32_t vertex_count;
   uint32_t vertex_capacity;
   PositionStack position_stack;
+  ColorStack color_stack;
 } Turtle3D;
 
 // Allocates a new turtle, at position 0, 0, 0, with no vertices. Returns NULL
@@ -110,6 +119,11 @@ int PushTurtlePosition(Turtle3D *t, float ignored);
 // It's an error if this instruction is issued when the stack is empty. The
 // argument is ignored.
 int PopTurtlePosition(Turtle3D *t, float ignored);
+
+// Basically the same as PushTurtlePosition/PopTurtlePosition, but saves and
+// restores the turtle's current color.
+int PushTurtleColor(Turtle3D *t, float ignored);
+int PopTurtleColor(Turtle3D *t, float ignored);
 
 #endif  // TURTLE_3D_H
 
