@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,8 +15,9 @@
 
 #define DEFAULT_WINDOW_WIDTH (800)
 #define DEFAULT_WINDOW_HEIGHT (600)
+#define DEFAULT_FPS (60.0)
 
-ApplicationState* AllocateApplicationState(void) {
+static ApplicationState* AllocateApplicationState(void) {
   ApplicationState *to_return = NULL;
   to_return = calloc(1, sizeof(*to_return));
   if (!to_return) return NULL;
@@ -23,10 +25,11 @@ ApplicationState* AllocateApplicationState(void) {
   to_return->window_height = DEFAULT_WINDOW_HEIGHT;
   to_return->aspect_ratio = ((float) to_return->window_width) /
     ((float) to_return->window_height);
+  to_return->frame_duration = 1.0 / DEFAULT_FPS;
   return to_return;
 }
 
-void FreeApplicationState(ApplicationState *s) {
+static void FreeApplicationState(ApplicationState *s) {
   if (!s) return;
   if (s->mesh) DestroyLSystemMesh(s->mesh);
   if (s->turtle) DestroyTurtle3D(s->turtle);
@@ -281,12 +284,29 @@ static void UpdateCamera(ApplicationState *s) {
   glm_vec4(position, 0, s->shared_uniforms.camera_position);
 }
 
+// Sleeps for s number of seconds.
+static void SleepSeconds(double s) {
+  struct timespec t;
+  t.tv_sec = (uint64_t) s;
+  t.tv_nsec = (s - ((double) t.tv_sec)) * 1e9;
+  nanosleep(&t, NULL);
+}
+
+static int WaitNextFrame(ApplicationState *s) {
+  double elapsed = glfwGetTime() - s->frame_start;
+  if (elapsed < s->frame_duration) {
+    SleepSeconds(s->frame_duration - elapsed);
+  }
+  return 1;
+}
+
 static int RunMainLoop(ApplicationState *s) {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glClearColor(0, 0, 0, 1.0);
   while (!glfwWindowShouldClose(s->window)) {
+    s->frame_start = glfwGetTime();
     if (!ProcessInputs(s)) {
       printf("Error processing inputs.\n");
       return 0;
@@ -304,6 +324,7 @@ static int RunMainLoop(ApplicationState *s) {
       printf("Error drawing window.\n");
       return 0;
     }
+    if (!WaitNextFrame(s)) return 0;
   }
   return 1;
 }

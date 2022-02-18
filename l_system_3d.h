@@ -20,6 +20,8 @@ typedef struct {
   int window_width;
   int window_height;
   float aspect_ratio;
+  double frame_start;
+  double frame_duration;
   LSystemMesh *mesh;
   LSystemConfig *config;
   Turtle3D *turtle;
@@ -30,12 +32,4 @@ typedef struct {
   uint32_t l_system_length;
   uint8_t *l_system_string;
 } ApplicationState;
-
-// Allocates an ApplicationState struct and initializes its values to 0.
-// Returns NULL on error.
-ApplicationState* AllocateApplicationState(void);
-
-// Frees an ApplicationState struct. The given pointer is no longer valid after
-// this function returns.
-void FreeApplicationState(ApplicationState *s);
 
