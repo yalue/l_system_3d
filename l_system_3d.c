@@ -34,6 +34,7 @@ static void FreeApplicationState(ApplicationState *s) {
   if (s->mesh) DestroyLSystemMesh(s->mesh);
   if (s->turtle) DestroyTurtle3D(s->turtle);
   if (s->config) DestroyLSystemConfig(s->config);
+  free(s->config_file_path);
   glDeleteBuffers(1, &(s->ubo));
   if (s->window) glfwDestroyWindow(s->window);
   memset(s, 0, sizeof(*s));
@@ -203,20 +204,20 @@ static int DecreaseIterations(ApplicationState *s) {
   return 1;
 }
 
-// Reloads the config file from ./config.txt. If this fails, then we'll just
-// print a message and return. (The config can be faulty at runtime, but we
-// won't start the program unless it's OK.)
+// Reloads the config file. If this fails, then we'll just print a message and
+// return. (The config can be faulty at runtime, but we won't start the program
+// unless it's OK when starting.)
 static void ReloadConfig(ApplicationState *s) {
   LSystemConfig *new_config = NULL;
   LSystemConfig *old_config = s->config;
-  new_config = LoadLSystemConfig("./config.txt");
+  new_config = LoadLSystemConfig(s->config_file_path);
   if (!new_config) {
-    printf("Failed loading new config file.\n");
+    printf("Failed reloading the config file.\n");
     return;
   }
   s->config = new_config;
   DestroyLSystemConfig(old_config);
-  printf("Config updated OK.\n");
+  printf("Config %s updated OK.\n", s->config_file_path);
 }
 
 static void PrintMemoryUsage(ApplicationState *s) {
@@ -341,6 +342,22 @@ int main(int argc, char **argv) {
     printf("Failed allocating application state.\n");
     return 1;
   }
+  if (argc > 2) {
+    printf("Usage: %s [config file path]\n", argv[0]);
+    FreeApplicationState(s);
+    return 1;
+  }
+  if (argc == 2) {
+    s->config_file_path = strdup(argv[1]);
+  } else {
+    // Using strdup so that we can "free" it no matter what.
+    s->config_file_path = strdup("./config.txt");
+  }
+  if (!s->config_file_path) {
+    printf("Failed copying config file path.\n");
+    FreeApplicationState(s);
+    return 1;
+  }
   if (!SetupWindow(s)) {
     printf("Failed setting up window.\n");
     FreeApplicationState(s);
@@ -378,13 +395,13 @@ int main(int argc, char **argv) {
     to_return = 1;
     goto cleanup;
   }
-  s->config = LoadLSystemConfig("./config.txt");
+  s->config = LoadLSystemConfig(s->config_file_path);
   if (!s->config) {
-    printf("Error parsing ./config.txt.\n");
+    printf("Error parsing %s\n", s->config_file_path);
     to_return = 1;
     goto cleanup;
   }
-  printf("Config loaded OK!\n");
+  printf("Config %s loaded OK!\n", s->config_file_path);
   s->l_system_string = (uint8_t *) strdup(s->config->init);
   if (!s->l_system_string) {
     printf("Error initializing L-system string.\n");

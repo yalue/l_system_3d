@@ -1,0 +1,15 @@
+# Copied from https://en.wikipedia.org/wiki/L-system#Example_6:_Dragon_curve
+init F
+F F+G
+G F-G
+
+actions
+F
+move_forward 1.0
+G
+move_forward 1.0
+-
+rotate -90.0
++
+rotate 90.0
+

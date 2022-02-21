@@ -48,17 +48,20 @@ keypresses:
 Configuring the L-System
 ========================
 
-The system reads its configuration from the "config.txt" file.  The file
-must contain only ASCII characters. It starts with the L-system definition
-(replacement rules). Following a line containing the keyword `actions`, the
-file switches to defining the drawing actions the "turtle" takes when
-encountering each character. (The `actions` line must occur exactly once in the
-config.)
+The system reads its configuration from the "config.txt" file by default. If
+desired, you can pass a path to a different config as the program's first (and
+only) command line argument.
+
+The config file must contain only ASCII characters. It starts with the L-system
+definition (replacement rules). Following a line containing the keyword
+`actions`, the file switches to defining the drawing actions the "turtle" takes
+when encountering each character. (The `actions` line must occur exactly once
+in the config.)
 
 If you want a longer example, the default "config.txt" contains instructions
 for drawing a multi-colored Sierpinski pyramid. A simpler, single, dragon-curve
-example can be obtained by replacing the contents of "config.txt" with the
-following lines:
+example is also available in `dragon_curve.txt`. The contents of
+`dragon_curve.txt` are copied here:
 ```
 init F
 F F+G

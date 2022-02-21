@@ -22,6 +22,7 @@ typedef struct {
   float aspect_ratio;
   double frame_start;
   double frame_duration;
+  char *config_file_path;
   LSystemMesh *mesh;
   LSystemConfig *config;
   Turtle3D *turtle;
