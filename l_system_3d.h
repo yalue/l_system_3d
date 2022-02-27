@@ -12,6 +12,9 @@ typedef struct {
   mat4 projection;
   mat4 view;
   vec4 camera_position;
+  float size_scale;
+  float geometry_thickness;
+  float pad[2];
 } SharedUniforms;
 
 // Maintains global data about the running program.

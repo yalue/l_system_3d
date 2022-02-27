@@ -16,6 +16,7 @@
 #define DEFAULT_WINDOW_WIDTH (800)
 #define DEFAULT_WINDOW_HEIGHT (600)
 #define DEFAULT_FPS (60.0)
+#define DEFAULT_GEOMETRY_THICKNESS (0.5)
 
 static ApplicationState* AllocateApplicationState(void) {
   ApplicationState *to_return = NULL;
@@ -26,6 +27,7 @@ static ApplicationState* AllocateApplicationState(void) {
   to_return->aspect_ratio = ((float) to_return->window_width) /
     ((float) to_return->window_height);
   to_return->frame_duration = 1.0 / DEFAULT_FPS;
+  to_return->shared_uniforms.geometry_thickness = DEFAULT_GEOMETRY_THICKNESS;
   return to_return;
 }
 
@@ -98,6 +100,7 @@ static int GenerateVertices(ApplicationState *s) {
   int result;
   uint32_t char_index, inst_index;
   uint8_t c;
+  float size_scale;
   ResetTurtle3D(t);
   for (char_index = 0; char_index < s->l_system_length; char_index++) {
     c = s->l_system_string[char_index];
@@ -117,10 +120,11 @@ static int GenerateVertices(ApplicationState *s) {
     return 0;
   }
   if (!SetTransformInfo(s->turtle, s->mesh->model, s->mesh->normal,
-    s->mesh->location_offset)) {
+    s->mesh->location_offset, &size_scale)) {
     printf("Failed getting transform matrices.\n");
     return 0;
   }
+  s->shared_uniforms.size_scale = size_scale;
   return 1;
 }
 
@@ -233,6 +237,10 @@ static int ProcessInputs(ApplicationState *s) {
     glfwSetWindowShouldClose(s->window, 1);
     return 1;
   }
+  // TODO: Replace this key-press logic with a single function that checks
+  // the state of key_pressed_tmp, setting or unsetting it if necessary and
+  // returning true on a "new" press.
+
   // s->key_pressed_tmp is used to prevent counting one press multiple times,
   // and to prevent up and down from being pressed together.
   pressed = glfwGetKey(s->window, GLFW_KEY_UP) == GLFW_PRESS;
@@ -263,6 +271,18 @@ static int ProcessInputs(ApplicationState *s) {
     if (!GenerateVertices(s)) return 0;
   } else if ((s->key_pressed_tmp == GLFW_KEY_R) && !pressed) {
     // R pressed -> R released
+    s->key_pressed_tmp = 0;
+  }
+  pressed = glfwGetKey(s->window, GLFW_KEY_M) == GLFW_PRESS;
+  if (!s->key_pressed_tmp && pressed) {
+    // Nothing pressed -> M pressed
+    s->key_pressed_tmp = GLFW_KEY_M;
+    if (!SwitchRenderingModes(s->mesh)){
+      printf("Failed switching rendering modes.\n");
+      return 0;
+    }
+  } else if ((s->key_pressed_tmp == GLFW_KEY_M) && !pressed) {
+    // M pressed -> M released
     s->key_pressed_tmp = 0;
   }
   return 1;
@@ -303,8 +323,9 @@ static int WaitNextFrame(ApplicationState *s) {
 
 static int RunMainLoop(ApplicationState *s) {
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
+  // TODO: Re-enable face culling after getting the geometry shader working.
+  //glEnable(GL_CULL_FACE);
+  //glCullFace(GL_BACK);
   glClearColor(0, 0, 0, 1.0);
   while (!glfwWindowShouldClose(s->window)) {
     s->frame_start = glfwGetTime();

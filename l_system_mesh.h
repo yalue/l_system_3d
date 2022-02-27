@@ -30,6 +30,9 @@ typedef struct {
   uint32_t vertex_count;
   // OpenGL stuff needed for drawing this mesh.
   GLuint shader_program;
+  // If nonzero, the shader program is currently the more complex geometry
+  // version. If zero, we're just rendering the wireframe.
+  int using_geometry_shader;
   GLuint vao;
   GLuint vbo;
   // The model and normal matrices used when drawing this mesh.
@@ -61,5 +64,9 @@ int SetMeshVertices(LSystemMesh *m, MeshVertex *vertices, uint32_t count);
 
 // Draws the mesh. Returns 0 on error, including any GL errors if they occur.
 int DrawMesh(LSystemMesh *m);
+
+// Cycles between rendering modes (i.e. shader programs) that may be used to
+// render the given mesh. Returns 0 on error.
+int SwitchRenderingModes(LSystemMesh *m);
 
 #endif  // L_SYSTEM_MESH_H

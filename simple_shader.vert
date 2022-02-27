@@ -12,6 +12,9 @@ uniform vec3 location_offset;
 
 out VS_OUT {
   vec3 frag_position;
+  vec3 forward;
+  vec3 up;
+  vec3 right;
   vec4 color;
 } vs_out;
 
@@ -22,12 +25,15 @@ void main() {
   gl_Position = shared_uniforms.projection * shared_uniforms.view * model *
     vec4(position_in + location_offset, 1.0);
   vs_out.color = color_in;
+  vs_out.forward = normal * forward_in;
+  vs_out.up = normal * up_in;
+  vs_out.right = normalize(cross(vs_out.forward, vs_out.up));
 
-  // Prevent optimizing out the normal uniform.
-  // TODO (eventually): Remove once we actually use the normal uniform.
-  if (normal[0].x < -1) {
-    vs_out.color[1] = 1;
+  // Used to prevent the normal matrix from being optimized out. (I don't want
+  // to have to ignore the error when looking for its uniform location.)
+  if (normal[0][0] == 0.0001) {
+    vs_out.color[0] *= 0.9999;
   }
 
-  vs_out.frag_position = vec3(model * vec4(position_in, 1.0));
+  vs_out.frag_position = vec3(model * vec4(position_in + location_offset, 1.0));
 }

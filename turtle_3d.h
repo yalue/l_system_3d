@@ -78,8 +78,10 @@ void DestroyTurtle3D(Turtle3D *t);
 
 // Sets the model and normal matrices for the turtle's vertices, and the
 // location offset vector (to be added to each vertex location) that will
-// center the mesh on 0, 0, 0. Returns 0 on error.
-int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset);
+// center the mesh on 0, 0, 0. Returns 0 on error. Also returns the linear
+// scale by which the model matrix scales up or down.
+int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset,
+    float *size_scale);
 
 // The type used by all turtle-movement instructions. Some instructions may not
 // use the floating-point parameter. All instructions must return 0 on error

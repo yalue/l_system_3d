@@ -79,11 +79,13 @@ static GLuint LoadShader(const char *path, GLenum shader_type) {
 }
 
 // Links and returns the shader program from the given source file names.
+// The geometry_src_file can be NULL if a geometry shader isn't used. A
+// vertex and fragment shader are always required.
 static GLuint CreateShaderProgram(const char *vertex_src_file,
-    const char *fragment_src_file) {
+    const char *geometry_src_file, const char *fragment_src_file) {
   GLchar link_log[512];
   GLint link_result = 0;
-  GLuint vertex_shader, fragment_shader, to_return;
+  GLuint vertex_shader, geometry_shader, fragment_shader, to_return;
 
   vertex_shader = LoadShader(vertex_src_file, GL_VERTEX_SHADER);
   if (!vertex_shader) {
@@ -96,11 +98,28 @@ static GLuint CreateShaderProgram(const char *vertex_src_file,
     glDeleteShader(vertex_shader);
     return 0;
   }
+
+  // Only load the geometry shader if requested.
+  geometry_shader = 0;
+  if (geometry_src_file != NULL) {
+    geometry_shader = LoadShader(geometry_src_file, GL_GEOMETRY_SHADER);
+    if (!geometry_shader) {
+      printf("Couldn't load geometry shader.\n");
+      glDeleteShader(vertex_shader);
+      glDeleteShader(fragment_shader);
+      return 0;
+    }
+  }
+
   to_return = glCreateProgram();
   glAttachShader(to_return, vertex_shader);
+  if (geometry_shader) {
+    glAttachShader(to_return, geometry_shader);
+  }
   glAttachShader(to_return, fragment_shader);
   glLinkProgram(to_return);
   glDeleteShader(vertex_shader);
+  glDeleteShader(geometry_shader);
   glDeleteShader(fragment_shader);
   glGetProgramiv(to_return, GL_LINK_STATUS, &link_result);
   memset(link_log, 0, sizeof(link_log));
@@ -131,11 +150,11 @@ static int UniformIndex(GLuint program, const char *name, GLint *index) {
 
 // Loads the shaders for the model, and looks up uniform indices. Returns 0 on
 // error.
-static int SetupShaderProgram(LSystemMesh *m) {
+static int SetupShaderProgram(LSystemMesh *m, const char *vertex_src,
+    const char *geometry_src, const char *fragment_src) {
   GLuint p;
   GLuint block_index;
-  p = CreateShaderProgram("./mesh_vertex_shader.vert",
-    "./mesh_fragment_shader.frag");
+  p = CreateShaderProgram(vertex_src, geometry_src, fragment_src);
   if (!p) return 0;
   m->shader_program = p;
   if (!UniformIndex(p, "model", &(m->model_uniform_index))) return 0;
@@ -152,6 +171,19 @@ static int SetupShaderProgram(LSystemMesh *m) {
   }
   glUniformBlockBinding(p, block_index, SHARED_UNIFORMS_BINDING);
   return CheckGLErrors();
+}
+
+int SwitchRenderingModes(LSystemMesh *m) {
+  glDeleteProgram(m->shader_program);
+  m->shader_program = 0;
+  if (m->using_geometry_shader) {
+    m->using_geometry_shader = 0;
+    return SetupShaderProgram(m, "simple_shader.vert", NULL,
+      "simple_shader.frag");
+  }
+  m->using_geometry_shader = 1;
+  return SetupShaderProgram(m, "pipes_shader.vert", "pipes_shader.geom",
+    "pipes_shader.frag");
 }
 
 LSystemMesh* CreateLSystemMesh(void) {
@@ -186,7 +218,8 @@ LSystemMesh* CreateLSystemMesh(void) {
     DestroyLSystemMesh(m);
     return NULL;
   }
-  if (!SetupShaderProgram(m)) {
+  if (!SetupShaderProgram(m, "simple_shader.vert", NULL,
+    "simple_shader.frag")) {
     DestroyLSystemMesh(m);
     return NULL;
   }

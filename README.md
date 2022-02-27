@@ -43,6 +43,8 @@ keypresses:
 
  - Reload the config file: Press the "R" key.
 
+ - Switch between rendering modes: Press the "M" key.
+
  - Quit the program: Close the window, or press the escape key.
 
 Configuring the L-System

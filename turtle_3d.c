@@ -128,8 +128,10 @@ static void ModelToNormalMatrix(mat4 model, mat3 normal) {
   glm_mat4_pick3(dst, normal);
 }
 
-int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset) {
+int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset,
+    float *size_scale) {
   float dx, dy, dz, max_axis;
+  *size_scale = 1.0;
   dx = t->max_bounds[0] - t->min_bounds[0];
   dy = t->max_bounds[1] - t->min_bounds[1];
   dz = t->max_bounds[2] - t->min_bounds[2];
@@ -145,7 +147,8 @@ int SetTransformInfo(Turtle3D *t, mat4 model, mat3 normal, vec3 loc_offset) {
   max_axis = Max3(dx, dy, dz);
   glm_mat4_identity(model);
   if (max_axis > 0) {
-    glm_scale_uni(model, MESH_CUBE_SIZE / max_axis);
+    *size_scale = MESH_CUBE_SIZE / max_axis;
+    glm_scale_uni(model, *size_scale);
   }
   ModelToNormalMatrix(model, normal);
   // TODO (eventually): If I get less stupid, combine the loc_offset
