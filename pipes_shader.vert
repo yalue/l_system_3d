@@ -7,9 +7,6 @@ layout (location = 3) in vec4 color_in;
 // Added to the location of each vertex to center the overall mesh on 0,0,0.
 uniform vec3 location_offset;
 
-uniform mat4 model;
-uniform mat3 normal;
-
 out VS_OUT {
   vec3 position;
   vec3 forward;
@@ -21,9 +18,9 @@ out VS_OUT {
 //INCLUDE_SHARED_UNIFORMS
 
 void main() {
-  vs_out.position = (model * vec4(position_in + location_offset, 1.0)).xyz;
-  vs_out.forward = normalize(normal * forward_in);
-  vs_out.up = normalize(normal * up_in);
-  vs_out.right = normalize(cross(vs_out.forward, vs_out.up));
+  vs_out.position = position_in + location_offset;
+  vs_out.forward = forward_in;
+  vs_out.up = up_in;
   vs_out.color = color_in;
+  vs_out.right = normalize(cross(forward_in, up_in));
 }

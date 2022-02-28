@@ -22,8 +22,9 @@ out VS_OUT {
 //INCLUDE_SHARED_UNIFORMS
 
 void main() {
-  gl_Position = shared_uniforms.projection * shared_uniforms.view * model *
-    vec4(position_in + location_offset, 1.0);
+  vec4 loc_tmp = model * vec4(position_in + location_offset, 1.0);
+  gl_Position = shared_uniforms.projection * shared_uniforms.view * loc_tmp;
+  vs_out.frag_position = loc_tmp.xyz;
   vs_out.color = color_in;
   vs_out.forward = normal * forward_in;
   vs_out.up = normal * up_in;
@@ -34,6 +35,4 @@ void main() {
   if (normal[0][0] == 0.0001) {
     vs_out.color[0] *= 0.9999;
   }
-
-  vs_out.frag_position = vec3(model * vec4(position_in + location_offset, 1.0));
 }

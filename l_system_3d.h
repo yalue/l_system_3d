@@ -14,7 +14,8 @@ typedef struct {
   vec4 camera_position;
   float size_scale;
   float geometry_thickness;
-  float pad[2];
+  float current_time;
+  float pad[1];
 } SharedUniforms;
 
 // Maintains global data about the running program.

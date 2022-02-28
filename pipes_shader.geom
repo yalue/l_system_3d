@@ -1,6 +1,6 @@
 #version 330 core
 layout (lines) in;
-layout (triangle_strip, max_vertices = 4) out;
+layout (line_strip, max_vertices = 2) out;
 
 in VS_OUT {
   vec3 position;
@@ -18,40 +18,33 @@ out GS_OUT {
   vec4 color;
 } gs_out;
 
+uniform mat4 model;
+uniform mat3 normal;
+
 //INCLUDE_SHARED_UNIFORMS
 
+// Returns a value that oscillates between 0 and 1 based on time.
+float timeOffset() {
+  return (sin(shared_uniforms.current_time * 3) + 1.0) * 0.5;
+}
+
 void main() {
-  vec3 right = gs_in[0].right;
-  vec3 forward = gs_in[0].forward;
-  vec3 bottom = gs_in[0].position;
-  vec3 top = gs_in[0].position;
-  // NOTE: verify this is in the correct order.
+  gs_out.forward = normal * gs_in[0].forward;
+  gs_out.up = normal * gs_in[0].up;
+  gs_out.right = normal * gs_in[0].right;
+  gs_out.color = gs_in[1].color;
+
   mat4 projView = shared_uniforms.projection * shared_uniforms.view;
-  // The normal vectors don't change.
-  gs_out.forward = forward;
-  gs_out.up = gs_in[0].up;
-  gs_out.right = right;
-  //gs_out.color = gs_in[1].color;
-  gs_out.color = vec4(0.5, 0.3, 1.0, 1.0);
+  vec4 pos_tmp = model * vec4(gs_in[0].position, 1);
+  pos_tmp += normalize(vec4(gs_out.right, 1.0)) * timeOffset();
+  gs_out.frag_position = pos_tmp.xyz;
+  gl_Position = projView * pos_tmp;
+  EmitVertex();
 
-  float half_rect_width = 0.5 * shared_uniforms.geometry_thickness *
-    shared_uniforms.size_scale;
-
-  // Bottom left
-  gs_out.frag_position = bottom - (right * half_rect_width);
-  gl_Position = projView * vec4(gs_out.frag_position, 1.0);
-  EmitVertex();
-  // Bottom right
-  gs_out.frag_position = bottom + (right * half_rect_width);
-  gl_Position = projView * vec4(gs_out.frag_position, 1.0);
-  EmitVertex();
-  // Top right
-  gs_out.frag_position = top + (right * half_rect_width);
-  gl_Position = projView * vec4(gs_out.frag_position, 1.0);
-  EmitVertex();
-  // Top left
-  gs_out.frag_position = top - (right * half_rect_width);
-  gl_Position = projView * vec4(gs_out.frag_position, 1.0);
+  pos_tmp = model * vec4(gs_in[1].position, 1);
+  pos_tmp += normalize(vec4(gs_out.right, 1.0)) * timeOffset();
+  gs_out.frag_position = pos_tmp.xyz;
+  gl_Position = projView * pos_tmp;
   EmitVertex();
   EndPrimitive();
 }

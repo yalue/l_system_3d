@@ -46,7 +46,7 @@ static void FreeApplicationState(ApplicationState *s) {
 // Recomputes the scene's projection matrix based on s->aspect_ratio.
 static void UpdateProjectionMatrix(ApplicationState *s) {
   glm_mat4_identity(s->shared_uniforms.projection);
-  glm_perspective(45.0, s->aspect_ratio, 0.01, 100.0,
+  glm_perspective(45.0, s->aspect_ratio, 1.0, 100.0,
     s->shared_uniforms.projection);
 }
 
@@ -297,7 +297,9 @@ static void UpdateCamera(ApplicationState *s) {
   glm_vec3_zero(target);
   glm_vec3_zero(up);
   up[1] = 1.0;
-  tmp = glfwGetTime() / 4.0;
+  tmp = glfwGetTime();
+  s->shared_uniforms.current_time = tmp;
+  tmp /= 4.0;
   position[0] = sin(tmp) * 5.0;
   position[1] = 2.0;
   position[2] = cos(tmp) * 5.0;
