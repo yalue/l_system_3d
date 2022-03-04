@@ -1,6 +1,6 @@
 #version 330 core
 layout (lines) in;
-layout (line_strip, max_vertices = 2) out;
+layout (line_strip, max_vertices = 4) out;
 
 in VS_OUT {
   vec3 position;
@@ -36,13 +36,27 @@ void main() {
 
   mat4 projView = shared_uniforms.projection * shared_uniforms.view;
   vec4 pos_tmp = model * vec4(gs_in[0].position, 1);
-  pos_tmp += normalize(vec4(gs_out.right, 1.0)) * timeOffset();
+  pos_tmp += normalize(vec4(gs_out.forward, 1.0)) * timeOffset();
   gs_out.frag_position = pos_tmp.xyz;
   gl_Position = projView * pos_tmp;
   EmitVertex();
 
   pos_tmp = model * vec4(gs_in[1].position, 1);
-  pos_tmp += normalize(vec4(gs_out.right, 1.0)) * timeOffset();
+  pos_tmp += normalize(vec4(gs_out.forward, 1.0)) * timeOffset();
+  gs_out.frag_position = pos_tmp.xyz;
+  gl_Position = projView * pos_tmp;
+  EmitVertex();
+  EndPrimitive();
+
+  // Add a second primitive: a line starting at each midpoint and pointing in
+  // the "up" direction.
+  vec3 dir = gs_in[1].position - gs_in[0].position;
+  vec3 midpoint = gs_in[0].position + dir * 0.5;
+  pos_tmp = model * vec4(midpoint, 1.0);
+  gs_out.frag_position = pos_tmp.xyz;
+  gl_Position = projView * pos_tmp;
+  EmitVertex();
+  pos_tmp = model * vec4(midpoint + gs_out.up * (length(dir) * 0.5), 1);
   gs_out.frag_position = pos_tmp.xyz;
   gl_Position = projView * pos_tmp;
   EmitVertex();
