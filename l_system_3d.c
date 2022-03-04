@@ -16,7 +16,7 @@
 #define DEFAULT_WINDOW_WIDTH (800)
 #define DEFAULT_WINDOW_HEIGHT (600)
 #define DEFAULT_FPS (60.0)
-#define DEFAULT_GEOMETRY_THICKNESS (0.5)
+#define DEFAULT_GEOMETRY_THICKNESS (0.125)
 
 static ApplicationState* AllocateApplicationState(void) {
   ApplicationState *to_return = NULL;
@@ -325,9 +325,8 @@ static int WaitNextFrame(ApplicationState *s) {
 
 static int RunMainLoop(ApplicationState *s) {
   glEnable(GL_DEPTH_TEST);
-  // TODO: Re-enable face culling after getting the geometry shader working.
-  //glEnable(GL_CULL_FACE);
-  //glCullFace(GL_BACK);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
   glClearColor(0, 0, 0, 1.0);
   while (!glfwWindowShouldClose(s->window)) {
     s->frame_start = glfwGetTime();
