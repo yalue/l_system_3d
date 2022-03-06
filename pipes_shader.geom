@@ -1,6 +1,6 @@
 #version 330 core
 layout (lines) in;
-layout (triangle_strip, max_vertices = 3) out;
+layout (triangle_strip, max_vertices = 4) out;
 
 in VS_OUT {
   vec3 position;
@@ -41,33 +41,35 @@ void main() {
   gs_out.right = normalize(normal * gs_in[0].right);
   gs_out.color = gs_in[1].color;
 
+  vec4 frag_pos0 = model * vec4(gs_in[0].position, 1);
+  vec3 camera_right0 = cameraRight(frag_pos0.xyz, gs_out.forward);
+  vec4 frag_pos1 = model * vec4(gs_in[1].position, 1);
+  vec3 camera_right1 = cameraRight(frag_pos1.xyz, gs_out.forward);
   mat4 projView = shared_uniforms.projection * shared_uniforms.view;
-  vec4 pos_tmp = model * vec4(gs_in[0].position, 1);
-  vec3 frag_pos_start = pos_tmp.xyz;
-  gs_out.frag_position = frag_pos_start;;
-  gl_Position = projView * pos_tmp;
+  float half_width = shared_uniforms.geometry_thickness * 0.5;
+
+  // Bottom left
+  vec3 pos_tmp = frag_pos0.xyz - (half_width * camera_right0);
+  gs_out.frag_position = pos_tmp;
+  gl_Position = projView * vec4(pos_tmp, 1);
   EmitVertex();
 
-  pos_tmp = model * vec4(gs_in[1].position, 1);
-  vec3 frag_pos_end = pos_tmp.xyz;
-  gs_out.frag_position = frag_pos_end;
-  gl_Position = projView * pos_tmp;
+  // Bottom right
+  pos_tmp = frag_pos0.xyz + (half_width * camera_right0);
+  gs_out.frag_position = pos_tmp;
+  gl_Position = projView * vec4(pos_tmp, 1);
   EmitVertex();
 
-  // TODO (next): Continue the same thing, except put points to the left and
-  // right of both endpoints rather than a single triangle point to the left of
-  // the midpoint.
+  // Top left
+  pos_tmp = frag_pos1.xyz - (half_width * camera_right1);
+  gs_out.frag_position = pos_tmp;
+  gl_Position = projView * vec4(pos_tmp, 1);
+  EmitVertex();
 
-  // The third vertex is in the "up" direction from the midpoint of the
-  // original segment.
-  vec3 dir = gs_in[1].position - gs_in[0].position;
-  vec3 midpoint = gs_in[0].position + dir * 0.5;
-  pos_tmp = model * vec4(midpoint, 1);
-  vec3 plane_right = cameraRight(pos_tmp.xyz, gs_out.forward);
-  pos_tmp.xyz = pos_tmp.xyz - plane_right * (length(frag_pos_end -
-    frag_pos_start) * shared_uniforms.geometry_thickness);
-  gs_out.frag_position = pos_tmp.xyz;
-  gl_Position = projView * pos_tmp;
+  // Top right
+  pos_tmp = frag_pos1.xyz + (half_width * camera_right1);
+  gs_out.frag_position = pos_tmp;
+  gl_Position = projView * vec4(pos_tmp, 1);
   EmitVertex();
   EndPrimitive();
 }
