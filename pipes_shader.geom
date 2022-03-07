@@ -46,7 +46,8 @@ void main() {
   vec4 frag_pos1 = model * vec4(gs_in[1].position, 1);
   vec3 camera_right1 = cameraRight(frag_pos1.xyz, gs_out.forward);
   mat4 projView = shared_uniforms.projection * shared_uniforms.view;
-  float half_width = shared_uniforms.geometry_thickness * 0.5;
+  float half_width = shared_uniforms.geometry_thickness *
+    shared_uniforms.size_scale * 0.5;
 
   // Bottom left
   vec3 pos_tmp = frag_pos0.xyz - (half_width * camera_right0);
