@@ -184,6 +184,19 @@ static int IncreaseIterations(ApplicationState *s) {
   return 1;
 }
 
+// Sets the current number of iterations to 0. Used after reloading the config.
+static int SetIterationsTo0(ApplicationState *s) {
+  free(s->l_system_string);
+  s->l_system_string = (uint8_t *) strdup(s->config->init);
+  if (!s->l_system_string) {
+    printf("Failed copying the initial L-system string.\n");
+    return 0;
+  }
+  s->l_system_length = strlen(s->config->init);
+  s->l_system_iterations = 0;
+  return 1;
+}
+
 // Reduces the L-system iterations by one. Unfortunately, this is implemented
 // by recomputing the entire thing. Does nothing if we're already at 0
 // iterations.
@@ -194,14 +207,7 @@ static int DecreaseIterations(ApplicationState *s) {
     return 1;
   }
   target_iterations = s->l_system_iterations - 1;
-  free(s->l_system_string);
-  s->l_system_string = (uint8_t *) strdup(s->config->init);
-  if (!s->l_system_string) {
-    printf("Failed copying the initial L-system string.\n");
-    return 0;
-  }
-  s->l_system_length = strlen(s->config->init);
-  s->l_system_iterations = 0;
+  if (!SetIterationsTo0(s)) return 0;
   for (i = 0; i < target_iterations; i++) {
     if (!IncreaseIterations(s)) return 0;
   }
@@ -222,6 +228,10 @@ static void ReloadConfig(ApplicationState *s) {
   s->config = new_config;
   DestroyLSystemConfig(old_config);
   printf("Config %s updated OK.\n", s->config_file_path);
+  if (!(SetIterationsTo0(s) && GenerateVertices(s))) {
+    printf("Failed re-generating image.\n");
+    exit(1);
+  }
 }
 
 static void PrintMemoryUsage(ApplicationState *s) {
